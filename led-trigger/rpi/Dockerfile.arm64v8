@@ -1,0 +1,19 @@
+FROM rrdockerhub/alpine-arm64v8 as builder
+
+RUN	apk update --no-cache && \
+	apk add alpine-sdk 
+
+ADD . /app
+
+WORKDIR /app/src
+
+RUN make
+
+FROM arm64v8/alpine
+
+COPY --from=builder /app/src/led_trigger /usr/bin/led_trigger
+COPY --from=builder /app/docker-entrypoint.sh /usr/bin
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+CMD ["led_trigger", "led0", "heartbeat"]
